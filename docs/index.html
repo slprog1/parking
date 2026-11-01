@@ -135,7 +135,7 @@ tr:last-child td { border-bottom: 0; }
     <div class="progress" id="progress"></div>
   </header>
 
-  <div id="banner" class="banner" hidden></div>
+  <div id="banner" class="banner" style="display:none"></div>
 
   <section class="sum" id="summary" aria-label="Кошти"></section>
 
@@ -400,7 +400,7 @@ tr:last-child td { border-bottom: 0; }
   function ready() { if (S.loaded.i && S.loaded.p) { clearTimeout(timer); banner(""); } }
   if (!window.claude || !window.claude.use) {
     S.canWrite = false; S.issues = SNAP.issues; S.payments = SNAP.payments; S.loaded.i = S.loaded.p = true; clearTimeout(timer);
-    $("addPay").disabled = true; banner("Знімок від 01.11.2026. Сторінка тільки для перегляду."); renderAll(); return;
+    $("addPay").disabled = true; banner(""); renderAll(); return;
   }
   Promise.all([window.claude.use("db"), window.claude.use("user")]).then(function (r) {
     S.db = r[0];
