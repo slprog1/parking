@@ -29,7 +29,7 @@ body {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 20px; min-width: 0; }
+.wrap { width: 100%; max-width: 1040px; margin: 0 auto; display: grid; gap: 20px; min-width: 0; }
 h1, h2, h3 { font-family: var(--font-display); font-weight: 600; letter-spacing: .02em; margin: 0; text-wrap: balance; }
 h1 { font-size: 34px; text-transform: uppercase; line-height: 1.1; }
 h2 { font-size: 22px; text-transform: uppercase; }
@@ -94,7 +94,7 @@ button { cursor: pointer; }
 .bay .n { font-family: var(--font-display); font-size: 30px; font-weight: 600; line-height: 1; }
 .bay .s { margin-top: 6px; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
 .bay .h { font-size: 12px; color: var(--muted); }
-.bay.empty .s { color: var(--muted); font-weight: 400; }
+.bay.none .s { color: var(--muted); font-weight: 400; }
 .bay.free { border-left-color: var(--muted); border-right-color: var(--muted); }
 .note { color: var(--muted); font-size: 13px; margin: 0; }
 
@@ -148,7 +148,7 @@ tr:last-child td { border-bottom: 0; }
     <div class="bar">
       <div class="chips" id="filters"></div>
     </div>
-    <form class="form" id="issueForm" hidden>
+    <form class="form" id="issueForm" style="display:none">
       <h2 id="issueFormTitle">Нова робота</h2>
       <label>Що треба зробити<input id="i-title" required maxlength="120"></label>
       <label>Опис<textarea id="i-desc" rows="3" maxlength="600"></textarea></label>
@@ -167,9 +167,9 @@ tr:last-child td { border-bottom: 0; }
   <section id="pane-money" class="wrap" style="gap:14px" hidden>
     <div class="bar">
       <h2>Внески по місцях</h2>
-      <button class="btn primary" id="addPay">Додати запис</button>
+      <button class="btn primary" id="addPay" style="display:none">Додати запис</button>
     </div>
-    <form class="form" id="payForm" hidden>
+    <form class="form" id="payForm" style="display:none">
       <h2 id="payFormTitle">Новий запис</h2>
       <div class="row">
         <label>Тип<select id="p-kind"><option value="in">Внесок (надійшло)</option><option value="out">Витрата</option></select></label>
@@ -184,13 +184,13 @@ tr:last-child td { border-bottom: 0; }
       <div class="btns"><button class="btn primary" type="submit">Зберегти</button><button class="btn" type="button" id="payCancel">Скасувати</button></div>
     </form>
     <div class="bays" id="bays"></div>
-    <p class="note">Натисніть на місце, щоб додати внесок. Витрати не рахуються до місць, вони віднімаються із залишку.</p>
+    <p class="note" style="display:none">Натисніть на місце, щоб додати внесок. Витрати не рахуються до місць, вони віднімаються із залишку.</p>
     <h2>Усі записи</h2>
     <div id="ledger"></div>
   </section>
 </div>
-<div id="toast" class="toast" hidden></div>
-<div id="lb" class="lb" hidden><figure><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure></div>
+<div id="toast" class="toast" style="display:none"></div>
+<div id="lb" class="lb" style="display:none"><figure><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure></div>
 
 <script>
 (function () {
@@ -277,7 +277,7 @@ tr:last-child td { border-bottom: 0; }
     var html = "";
     for (var n = 1; n <= 14; n++) {
       var v = tot[n] || 0;
-      html += '<button class="bay ' + (v ? "" : "empty") + '" data-spot="' + n + '"' + (S.canWrite ? "" : " disabled") + '><div class="n">' + n + '</div><div class="s num">' + (v ? money(v) : "не вносили") + '</div><div class="h">місце</div></button>';
+      html += '<button class="bay ' + (v ? "" : "none") + '" data-spot="' + n + '"' + (S.canWrite ? "" : " disabled") + '><div class="n">' + n + '</div><div class="s num">' + (v ? money(v) : "не вносили") + '</div><div class="h">місце</div></button>';
     }
     if (free) html += '<div class="bay free"><div class="n">?</div><div class="s num">' + money(free) + '</div><div class="h">без місця</div></div>';
     $("bays").innerHTML = html;
@@ -368,7 +368,7 @@ tr:last-child td { border-bottom: 0; }
     var b = e.target.closest("button"); if (!b) return;
     if (b.dataset.tab) { setTab(b.dataset.tab); return; }
     if (b.dataset.f) { S.filter = b.dataset.f; renderIssues(); return; }
-    if (b.dataset.photo) { $("lbImg").src = PHOTOS[b.dataset.photo]; $("lbCap").textContent = PHOTO_LABEL[b.dataset.photo]; $("lb").hidden = false; return; }
+    if (b.dataset.photo) { $("lbImg").src = PHOTOS[b.dataset.photo]; $("lbCap").textContent = PHOTO_LABEL[b.dataset.photo]; $("lb").style.display = "grid"; return; }
     if (b.dataset.editI) { openIssueForm(byId(S.issues, b.dataset.editI)); return; }
     if (b.dataset.editP) { openPayForm(byId(S.payments, b.dataset.editP), 0); return; }
     if (b.dataset.spot) { openPayForm(null, Number(b.dataset.spot)); return; }
@@ -379,8 +379,8 @@ tr:last-child td { border-bottom: 0; }
     var s = e.target.closest("select[data-st]"); if (!s || !S.db) return;
     col("issues").doc(s.dataset.st).update({ status: s.value }).then(null, fail);
   });
-  $("lb").addEventListener("click", function () { $("lb").hidden = true; });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") $("lb").hidden = true; });
+  $("lb").addEventListener("click", function () { $("lb").style.display = "none"; });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") $("lb").style.display = "none"; });
 
   /* ---------- tabs (hash: works / money) ---------- */
   function setTab(t) {
